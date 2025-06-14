@@ -8,7 +8,7 @@ class ManagerContainer {
 
     public ManagerContainer() {
         lectureManager = new LectureManager();
-
+        attendanceManager = new AttendanceManager();
         memoManager = new MemoManager();
         scheduleManager = new ScheduleManager();
     }

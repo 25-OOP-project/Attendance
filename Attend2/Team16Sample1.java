@@ -1,5 +1,7 @@
 package Attend2;
 
+import javax.swing.JOptionPane;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -52,6 +54,7 @@ class MainWindow extends JFrame {
 	JButton deletebtn = null;
 	// JButton sortbtn = null;
 	JButton attbtn = null;
+	JButton attsButton = null;
 	JButton membtn = null;
 	JButton schbtn = null;
 	JTextArea jta = null;
@@ -142,6 +145,8 @@ class MainWindow extends JFrame {
 		menupanel.setLayout(new GridLayout(1, 3));
 		attbtn = new JButton("출석");
 		menupanel.add(attbtn);
+		JButton attStatsBtn = new JButton("출석 통계");
+		menupanel.add(attStatsBtn);
 		membtn = new JButton("메모");
 		menupanel.add(membtn);
 		schbtn = new JButton("일정");
@@ -155,7 +160,32 @@ class MainWindow extends JFrame {
 		editbtn.addActionListener(new EditListener(this)); // editbtn(버튼) 객체에 Event Listener 등록. 버튼에 클릭 이벤트를 등록하고, 클릭 시
 															// AddListener 클래스에서 정의한 로직이 실행되도록 함.
 		viewbtn.addActionListener(new ViewListener(this)); // viewbtn(버튼) 객체에 Event Listener 등록. 버튼에 클릭 이벤트를 등록하고, 클릭 시
-															// AddListener 클래스에서 정의한 로직이 실행되도록 함.
+
+		// MainWindow 안에
+		attbtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int selectedIndex = lectureList.getSelectedIndex();
+				if (selectedIndex == -1) {
+					JOptionPane.showMessageDialog(MainWindow.this, "먼저 강의를 선택하세요.");
+					return;
+				}
+				Lecture selectedLecture = lecmanager.lecture[selectedIndex];
+				String lectureName = selectedLecture.getLecturename();
+
+				JFrame attFrame = new JFrame("출석 관리 - " + lectureName);
+				attFrame.setSize(300, 200);
+				attFrame.setLocationRelativeTo(MainWindow.this);
+
+				// attmanager가 null이 아니어야 함
+				AttendancePanel attPanel = new AttendancePanel(attFrame, lectureName, attmanager);
+				attFrame.setContentPane(attPanel);
+				attFrame.setVisible(true);
+			}
+		});
+		attStatsBtn.addActionListener(e -> {
+			new AttendanceStatisticsFrame(attmanager, lecmanager).setVisible(true);
+		});
 
 		// 창 닫을 때 데이터 저장
 		this.addWindowListener(new WindowAdapter() {
@@ -240,8 +270,7 @@ class LectureManager {
 	Lecture[] lecture = new Lecture[10]; // 강의를 리스트로 추가
 	int lecturecnt = 0; // 강의 개수
 
-	// fileio와 연결
-	// 배열 → 리스트
+	// 배열 → 리스트 (기존 static 메서드)
 	public static List<Lecture> toList(LectureManager mgr) {
 		List<Lecture> temp = new ArrayList<>();
 		for (int i = 0; i < mgr.lecturecnt; i++) {
@@ -250,7 +279,7 @@ class LectureManager {
 		return temp;
 	}
 
-	// 리스트 → 배열
+	// 리스트 → 배열 (기존 static 메서드)
 	public static void fromList(LectureManager mgr, List<Lecture> list) {
 		int size = Math.min(list.size(), mgr.lecture.length);
 		for (int i = 0; i < size; i++) {
@@ -275,14 +304,14 @@ class LectureManager {
 		}
 	}
 
-	/*
-	 * void sortLecture() { // 강의명 정렬 함수(아직 미실행) int i, j; Lecture temp;
-	 * 
-	 * for (i=0; i<lecturecnt-1; i++) { for (j=i+1; j<lecturecnt; j++) {
-	 * if(lecture[i].time > lecture[j].time) { temp = lecture[i]; lecture[i] =
-	 * lecture[j]; lecture[j] = temp; } } } }
-	 */
-
+	// 새로 추가: 강의 리스트를 반환하는 메서드
+	public List<Lecture> getLectureList() {
+		List<Lecture> temp = new ArrayList<>();
+		for (int i = 0; i < lecturecnt; i++) {
+			temp.add(lecture[i]);
+		}
+		return temp;
+	}
 }
 
 // Event Listener 클래스
